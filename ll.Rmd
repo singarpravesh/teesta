@@ -1,0 +1,91 @@
+---
+title: ' Valuation'
+csl: ecosystem-services.csl
+fontsize: 12pt
+output:
+  bookdown::word_document2:
+    toc: yes
+    number_sections: yes
+  html_document: null
+  word_document:
+    toc: yes
+font: timesnewroman
+subtitle: Teesta Riverine Ecosystem
+bibliography: references.bib
+always_allow_html: yes
+---
+
+```{r}
+library(DCchoice)
+library(tidyverse)
+library(censReg)
+library(MASS)
+library(effects)
+library(stargazer)
+library(summarytools)
+
+```
+
+
+```{r}
+l <- read.csv("ll.csv")
+l <- l %>% 
+  mutate(Rating = as.factor(
+    if_else(rating == 0 | rating == 1, "Low",
+            if_else(rating == 2 | rating == 3, "Medium", "High"))),
+         age = replace(age, age > 100, 55)) %>% 
+  mutate(Rating = factor(Rating , levels = c("Low", "Medium", "High")), 
+  Species_afffect_how = as.factor(replace_na(species_affect_how, "No"))) %>% 
+  mutate(Species = if_else(Species_afffect_how == "No", "No", "Yes")) %>% 
+  mutate(married = as.factor(married),
+         HEP_affect1 = as.factor(HEP_affect1),
+         traffic = as.factor(traffic),
+         water_shortage = as.factor(water_shortage),
+         Species = as.factor(Species))
+
+```
+
+```{r}
+# descriptuive stats of the variables
+
+
+summary(na.omit(l[, c("Rating", "married", 'HEP_affect1', 'migrant', 'traffic', 'satisfied', 'water_shortage', 'Species')]))
+
+view(dfSummary(na.omit(l[, c("Rating", "married", 'HEP_affect1', 'migrant', 'traffic', 'satisfied', 'water_shortage', 'Species')])))
+
+polr_model <- polr(Rating ~   married + HEP_affect1 + migrant + traffic  + satisfied + water_shortage + Species 
+                   , data = l, Hess = TRUE) 
+summary_table <- coef(summary(polr_model))
+pval <- pnorm(abs(summary_table[,"t value"]), lower.tail = FALSE) * 2
+
+confint(polr_model)[,1] %>% class()
+(summary_table_pval <- data.frame(round(summary_table, 3), 
+                                  c1 = round(c(confint(polr_model)[,1],0,0), 3),
+                                  c2 = round(c(confint(polr_model)[,2],0,0), 3),
+                                  pvalue = round(pval, 2)) %>% 
+    mutate(sig = if_else(pvalue < 0.05, "**",
+                  if_else(pvalue < 0.01, "***",
+                          if_else(pvalue < 0.1, "*", "")))))
+summary_table_pval %>% 
+kableExtra::kable() %>% 
+  kableExtra::kable_styling(bootstrap_options = c('striped'))
+
+```
+
+
+```{r}
+# odds ratio
+
+# get the coefficients and the transpose of the  confidence intervals and exponentiate
+
+data.frame(
+  Value = exp(coef(polr_model)),
+  Std.Error = stdEr(polr_model)[1:9],
+  c1 = exp(as.numeric(t(confint(polr_model)[,1]))),
+  c2 = exp(as.numeric(t(confint(polr_model)[,2]))),
+  pvalue = as.numeric(pval[1:9])
+) %>% 
+  round(3)
+
+```
+

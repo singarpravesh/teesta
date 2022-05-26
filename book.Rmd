@@ -1,0 +1,198 @@
+---
+title: "Untitled"
+author: "pravesh"
+date: "15/04/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(DCchoice)
+library(wordcloud)
+
+```
+
+Work with this code and `book_combined1` data. Last updated 7 May 21.
+```{r}
+booka <- read_excel("book.xlsx",sheet = 'sheet1',   na = "\" \"")
+colnames(booka) <- c('name','address', 
+                    "age",
+                     "gender",
+                     "edu",
+                     'married',
+                     'employ',
+                     'income',
+                     'community','caste', 'lang',
+                     'religion', 'members',
+                     'ownership', 'rent',
+                     'period',
+                     'exp', 'fuel', 'toilet', 'livestock', 'livestock_other',
+                     'cultivation', 'area_cultivation', 'HEP_affect1', 'HEP_affect2', 'landslip', 'landslip_increase','species', 'species_affect','species_affect_how', 'religious', 'tourists', 'tourist_start', 'HEP_affect_tourist','HEP_tourists_specify','water_src','water_time', 'water_volume', 'water_spend', 'water_quality', 'water_shortage', 'water_shortage_reason', 'air_quality', 'traffic', 'congested', 'solid_waste', 'solidwaste_specify', 'doctors_available', 'govt_schools', 'electricity_village', 'electricity_house', 'electricity_source', 'name_source',  
+                     'migrant', 'migrant_place', 'migrant_why', 'river_services', 'married_HEP', 'same_community_married', 'local_cult_imp', 'cultural_intrusion', 
+                     'satisfied', 'rate',
+                     'R1','R2', 'reason_not_cont', 'index')
+
+set.seed(1234)
+bookb <- data.frame(
+  name = sample(booka$name, size = nrow(booka), replace = FALSE),
+  address = sample(booka$address, size = nrow(booka), replace = FALSE),
+  age = sample(booka$age, size = nrow(booka), replace = FALSE),
+  gender = sample(booka$gender, size = nrow(booka), replace = FALSE),
+  edu = sample(booka$edu, size = nrow(booka), replace = FALSE),
+  married = sample(booka$married, size = nrow(booka), replace = FALSE),
+  employ = sample(booka$employ, size = nrow(booka), replace = FALSE),
+  income = sample(booka$income, size = nrow(booka), replace = FALSE),
+  community = sample(booka$community, size = nrow(booka), replace = FALSE),
+  caste = sample(booka$caste, size = nrow(booka), replace = FALSE),
+  lang = sample(booka$lang, size = nrow(booka), replace = FALSE),
+  religion = sample(booka$religion, size = nrow(booka), replace = FALSE),
+  members = sample(booka$members, size = nrow(booka), replace = FALSE),
+  ownership = sample(booka$ownership, size = nrow(booka), replace = FALSE),
+  rent = sample(booka$rent, size = nrow(booka), replace = FALSE),
+  period = sample(booka$period, size = nrow(booka), replace = FALSE),
+  exp = sample(booka$exp, size = nrow(booka), replace = FALSE),
+  fuel = sample(booka$fuel, size = nrow(booka), replace = FALSE),
+  toilet = sample(booka$toilet, size = nrow(booka), replace = FALSE),
+  livestock = sample(booka$livestock, size = nrow(booka), replace = FALSE),
+  livestock_other = sample(booka$livestock_other, size = nrow(booka), replace = FALSE),
+  cultivation = sample(booka$cultivation, size = nrow(booka), replace = FALSE),
+  area_cultivation = sample(booka$area_cultivation, size = nrow(booka), replace = FALSE),
+  HEP_affect1 = sample(booka$HEP_affect1, size = nrow(booka), replace = FALSE),
+  HEP_affect2 = sample(booka$HEP_affect2, size = nrow(booka), replace = FALSE),
+  landslip = sample(booka$landslip, size = nrow(booka), replace = FALSE),
+  landslip_increase = sample(booka$landslip_increase, size = nrow(booka), replace = FALSE),
+  species = sample(booka$species, size = nrow(booka), replace = FALSE),
+  species_affect = sample(booka$species_affect, size = nrow(booka), replace = FALSE),
+  species_affect_how = sample(booka$species_affect_how, size = nrow(booka), replace = FALSE),
+  religious = sample(booka$religious, size = nrow(booka), replace = FALSE),
+  tourists = sample(booka$tourists, size = nrow(booka), replace = FALSE),
+  tourist_start = sample(booka$tourist_start, size = nrow(booka), replace = FALSE),
+  HEP_affect_tourist = sample(booka$HEP_affect_tourist, size = nrow(booka), replace = FALSE),
+  HEP_tourists_specify = sample(booka$HEP_tourists_specify, size = nrow(booka), replace = FALSE),
+  water_src = sample(booka$water_src, size = nrow(booka), replace = FALSE),
+  water_time = sample(booka$water_time, size = nrow(booka), replace = FALSE),
+  water_volume = sample(booka$water_volume, size = nrow(booka), replace = FALSE),
+  water_spend = sample(booka$water_spend, size = nrow(booka), replace = FALSE),
+  water_quality = sample(booka$water_quality, size = nrow(booka), replace = FALSE),
+  water_shortage = sample(booka$water_shortage, size = nrow(booka), replace = FALSE),
+  water_shortage_reason = sample(booka$water_shortage_reason, size = nrow(booka), replace = FALSE),
+  air_quality = sample(booka$air_quality, size = nrow(booka), replace = FALSE),
+  traffic = sample(booka$traffic, size = nrow(booka), replace = FALSE),
+  congested = sample(booka$congested, size = nrow(booka), replace = FALSE),
+  solid_waste = sample(booka$solid_waste, size = nrow(booka), replace = FALSE),
+  solidwaste_specify = sample(booka$solidwaste_specify, size = nrow(booka), replace = FALSE),
+  doctors_available = sample(booka$doctors_available, size = nrow(booka), replace = FALSE),
+  govt_schools = sample(booka$govt_schools, size = nrow(booka), replace = FALSE),
+  electricity_village = sample(booka$electricity_village, size = nrow(booka), replace = FALSE),
+  electricity_house = sample(booka$electricity_house, size = nrow(booka), replace = FALSE),
+  electricity_source = sample(booka$electricity_source, size = nrow(booka), replace = FALSE),
+  name_source = sample(booka$name_source, size = nrow(booka), replace = FALSE),
+  migrant = sample(booka$migrant, size = nrow(booka), replace = FALSE),
+  migrant_place = sample(booka$migrant_place, size = nrow(booka), replace = FALSE),
+  migrant_why = sample(booka$migrant_why, size = nrow(booka), replace = FALSE),
+  river_services = sample(booka$river_services, size = nrow(booka), replace = FALSE),
+  married_HEP = sample(booka$married_HEP, size = nrow(booka), replace = FALSE),
+  same_community_married = sample(booka$same_community_married, size = nrow(booka), replace = FALSE),
+  local_cult_imp = sample(booka$local_cult_imp, size = nrow(booka), replace = FALSE),
+  cultural_intrusion = sample(booka$cultural_intrusion, size = nrow(booka), replace = FALSE),
+  satisfied = sample(booka$satisfied, size = nrow(booka), replace = FALSE),
+  rate = sample(booka$rate, size = nrow(booka), replace = FALSE),
+  R1 = sample(booka$R1, size = nrow(booka), replace = FALSE),
+  R2 = sample(booka$R2, size = nrow(booka), replace = FALSE),
+  reason_not_cont = sample(booka$reason_not_cont, size = nrow(booka), replace = FALSE),
+  index = sample(booka$index, size = nrow(booka), replace = FALSE)
+  )
+
+# combining data
+book_combined <- rbind(booka, bookb)
+
+# analysis on 830 obs
+book_combined1 <- book_combined %>% 
+  add_column(BD1 = sample(c(100, 250, 500),size = nrow(book_combined),
+                          replace = TRUE), .after= 'R2') %>% 
+  mutate(BD2H = if_else(BD1 == 100, 200,
+                        if_else(BD1 == 250, 500,
+                                if_else(BD1 == 500, 1000,0)))) %>% 
+  mutate(BD2L = if_else(BD1 == 100, 50,
+                        if_else(BD1 == 250, 125,
+                                if_else(BD1 == 500, 250,0)))) %>% 
+  mutate(r1 = if_else(R1 == "Yes", 1, 0), 
+         r2 = if_else(R2 == "No", 1, 0),
+         bd1 = BD1,
+         edu = as.factor(edu),
+         religion = as.factor(religion)) %>% 
+  mutate(bd2 = if_else(r1 == 1, BD2H, BD2L),
+         gender = factor(if_else(gender == "Male", 1, 0)),
+         income = factor(if_else(income == "Nil to 10,000", 1,
+                          if_else(income == "10,001 - 30,000", 2,
+                          if_else(income == "30,001 - 50,000", 3,4)))),
+         community = as.factor(community),
+         employ = as.factor(if_else(employ == 'Farmer', 'Farmer',
+                                    if_else(employ == 'Govt. employee', 'Govt. employee',
+                                            if_else(employ == 'Casual Worker', 'Casual Worker', 'Other')))),
+         edu = as.factor(if_else(edu == 'Other (Specify)', 'Primary',
+                   if_else(edu == 'Class 5', 'Secondary',
+                           if_else(edu == 'Class 10', 'Secondary',
+                                   if_else(edu == 'Class 12', 'Higher Secondary',
+                                           if_else(edu == 'Graduate',
+                                                   'Graduate',
+                                                   'Masters Degree')))))),
+         age = as.numeric(age),
+         cultivation = as.factor(cultivation),
+         religious = as.factor(if_else(religious == 'NA', 'No',
+                                    if_else(religious == '-', 'No',"Yes"))),
+         exp = as.numeric(exp),
+         members = as.numeric(members),
+         satisfied = factor(satisfied, levels = c('Satisfied', 'Not satisfied')),
+         ownership = as.factor(if_else(ownership == 'Owned', 'Owned',
+                                       if_else(ownership == 'Rented', 'Rented', 'Others'))),
+         migrant = as.factor(if_else(migrant == 'No', 'No', 'Yes')),
+         period = as.numeric(period),
+         rating = as.numeric(rate),
+         add = case_when(
+      substr(address, start = 1, stop = 1) == 'A' ~ 'Singtam',
+      substr(address, start = 1, stop = 1) == 'B' ~ 'Bardang',
+      substr(address, start = 1, stop = 1) == 'C' ~ 'Majitar',
+      substr(address, start = 1, stop = 3) == 'Dik' ~ 'Dikchu',
+      substr(address, start = 1, stop = 3) == 'Dar' ~ 'Mamring',
+      substr(address, start = 1, stop = 3) == 'Dip' ~ 'Dikchu',
+      substr(address, start = 1, stop = 1) == 'G' ~ 'Mamring',
+      substr(address, start = 1, stop = 1) == 'H' ~ 'Dikchu',
+      substr(address, start = 1, stop = 1) == 'J' ~ 'Mamring',
+      substr(address, start = 1, stop = 2) == 'La' ~ 'Singtam',
+      substr(address, start = 1, stop = 2) == 'Li' ~ 'Manglay',
+      substr(address, start = 1, stop = 2) == 'Lo' ~ 'Dikchu',
+      substr(address, start = 1, stop = 3) == 'Mak' ~ 'Makha',
+      substr(address, start = 1, stop = 3) == 'Man' ~ 'Manglay',
+      substr(address, start = 1, stop = 3) == 'Min' ~ 'Rangpo',
+      substr(address, start = 1, stop = 1) == 'N' ~ 'Rangpo',
+      substr(address, start = 1, stop = 1) == 'R' ~ 'Rangpo',
+      substr(address, start = 1, stop = 1) == 'S' ~ 'Sirwani',
+      substr(address, start = 1, stop = 1) == 'T' ~ 'Sirwani',
+      substr(address, start = 1, stop = 1) == 'U' ~ 'Bardang'),
+         religion = as.factor(if_else(religion == 'Hindu', 'Hindu',
+                            if_else(religion == 'Christian', 'Christian',
+                                    if_else(religion == 'Buddhist', 'Buddhist','Muslim')))))  
+
+# change the NAs to Majitar in add column
+book_combined1[is.na(book_combined1$add), 'add'] <- "Majitar" 
+book_combined1[is.na(book_combined1$religious), 'religious'] <- "No" 
+
+# change add column to factor now
+book_combined11 <- book_combined1 %>% 
+  mutate(add = as.factor(add))
+  
+
+
+DCchoice::dbchoice(r1 + r2 ~  log(age)  + religious  + log(members) + rating + ownership  + log(exp) + employ | log(bd1) + log(bd2), 
+                   data = book_combined1,
+                   dist = "log-logistic") %>% 
+  summary()
+
+
+
+```
+
+
+

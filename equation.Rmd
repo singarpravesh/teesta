@@ -1,0 +1,124 @@
+---
+title: "Untitled"
+author: "pravesh"
+date: "27/07/2021"
+output:
+  word_document: default
+  html_document: default
+---
+
+
+```{r}
+library(DCchoice)
+library(tidyverse)
+library(censReg)
+library(MASS)
+library(effects)
+library(stargazer)
+library(summarytools)
+
+```
+
+```{r}
+l <- book_combined1 %>% 
+  mutate(Rating = as.factor(
+    if_else(rating == 0 | rating == 1, "Low",
+            if_else(rating == 2 | rating == 3, "Medium", "High"))),
+         age = replace(age, age > 100, 55)) %>% 
+  mutate(Rating = factor(Rating , levels = c("Low", "Medium", "High")), 
+  Species_afffect_how = as.factor(replace_na(species_affect_how, "No"))) %>% 
+  mutate(Species = if_else(Species_afffect_how == "No", "No", "Yes")) %>% 
+  mutate(married = as.factor(married),
+         HEP_affect1 = as.factor(HEP_affect1),
+         traffic = as.factor(traffic),
+         water_shortage = as.factor(water_shortage),
+         Species = as.factor(Species))
+
+
+
+names(l)
+```
+
+```{r}
+# descriptuive stats of the variables
+
+
+summary(na.omit(l[, c("Rating", "married", 'HEP_affect1', 'migrant', 'traffic', 'satisfied', 'water_shortage', 'Species')]))
+
+view(dfSummary(na.omit(l[, c("Rating", "married", 'HEP_affect1', 'migrant', 'traffic', 'satisfied', 'water_shortage', 'Species')])))
+
+polr_model <- polr(Rating ~   married + HEP_affect1 + migrant + traffic  + satisfied + water_shortage + Species 
+                   , data = l, Hess = TRUE) 
+summary_table <- coef(summary(polr_model))
+pval <- pnorm(abs(summary_table[,"t value"]), lower.tail = FALSE) * 2
+(summary_table_pval <- data.frame(round(summary_table, 3), pvalue = round(pval, 2)) %>% 
+    mutate(sig = if_else(pvalue < 0.05, "**",
+                  if_else(pvalue < 0.01, "***",
+                          if_else(pvalue < 0.1, "*", "")))))
+summary_table_pval %>% 
+kableExtra::kable() %>% 
+  kableExtra::kable_styling(bootstrap_options = c('striped'))
+
+```
+
+
+
+```{r}
+plot(Effect(focal.predictors = "married",polr_model))
+plot(Effect(focal.predictors = "migrant",polr_model))
+plot(Effect(focal.predictors = "satisfied",polr_model))
+plot(Effect(focal.predictors = "Species",polr_model))
+```
+
+
+
+```{r}
+#Plotting the effects 
+# library("effects")
+Effect(focal.predictors = "HEP_affect1",polr_model)
+
+```
+
+
+
+```{r}
+
+
+glm.RR <- function(GLM.RESULT, digits = 2) {
+
+    if (GLM.RESULT$family$family == "binomial") {
+        LABEL <- "OR"
+    } else if (GLM.RESULT$family$family == "poisson") {
+        LABEL <- "RR"
+    } else {
+        stop("Not logistic or Poisson model")
+    }
+
+    COEF      <- stats::coef(GLM.RESULT)
+    CONFINT   <- stats::confint(GLM.RESULT)
+    TABLE     <- cbind(coef=COEF, CONFINT)
+    TABLE.EXP <- round(exp(TABLE), digits)
+
+    colnames(TABLE.EXP)[1] <- LABEL
+
+    TABLE.EXP
+}
+lo <- 
+  book_combined1 %>% 
+  mutate(educ = factor(if_else(edu == "Higher Secondary" |
+                          edu == "Graduate" |
+                          edu == "Masters Degree", "HS and above", "Below HS")),
+         farmer = factor(if_else(employ == "Farmer", "Farmer", "Others")))
+  
+
+
+ glm(satisfied ~ age + educ  + rating + cultural_intrusion + migrant +  religious + cultivation + tourists  + water_shortage + gender + members +   congested + air_quality,
+    data = lo, family = binomial(link = "logit")) %>%  summary()
+
+summary(poission1)
+
+  glm.RR(poission1)
+
+```
+
+
